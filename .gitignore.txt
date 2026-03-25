@@ -1,0 +1,17 @@
+# Environnements virtuels
+venv/
+env/
+.env
+
+# Fichiers système
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
+
+# Fichiers de données (dé-commente la ligne suivante si ton CSV fait plus de 100 Mo)
+# data/*.csv
+# data/raw/
+
+# Gros modèles de Machine Learning
+models/*.h5
+models/*.pt

@@ -1,0 +1,13 @@
+streamlit
+pandas
+numpy
+scikit-learn
+nltk
+gensim
+pyspellchecker
+tensorflow
+sentence-transformers
+matplotlib
+seaborn
+plotly
+joblib
