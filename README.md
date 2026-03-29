@@ -38,5 +38,5 @@ The application (`app.py`) is built to be fast, local, and fully interactive:
    ```
 3. Run the Streamlit application:
    ```bash
-   streamlit run app.py
+   python -m streamlit run app.py
    ```
