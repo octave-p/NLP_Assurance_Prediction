@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NLP Insurance Reviews — ESILV Presentation</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #1B2A4A;
+    --red:    #C0392B;
+    --white:  #FFFFFF;
+    --light:  #F4F6F9;
+    --mid:    #E8ECF2;
+    --text:   #2C3E50;
+    --muted:  #6B7A8D;
+    --green:  #27AE60;
+    --orange: #E67E22;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0D1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .deck {
+    position: relative;
+    width: 960px;
+    height: 540px;
+  }
+
+  /* ── SLIDE BASE ─────────────────────────────────────────── */
+  .slide {
+    position: absolute;
+    inset: 0;
+    background: var(--white);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .slide.active { display: flex; }
+
+  /* ── HEADER BAR ─────────────────────────────────────────── */
+  .slide-header {
+    background: var(--navy);
+    padding: 18px 36px 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .slide-header h1 {
+    color: var(--white);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    line-height: 1.2;
+  }
+  .slide-header .tag {
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: 1.5px solid var(--red);
+    padding: 3px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+    margin-left: 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── ACCENT LINE ────────────────────────────────────────── */
+  .accent-line {
+    height: 3px;
+    background: linear-gradient(90deg, var(--red) 0%, #E74C3C 50%, transparent 100%);
+    flex-shrink: 0;
+  }
+
+  /* ── BODY ───────────────────────────────────────────────── */
+  .slide-body {
+    flex: 1;
+    padding: 24px 36px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TYPOGRAPHY ─────────────────────────────────────────── */
+  h2 { color: var(--navy); font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  h3 { color: var(--navy); font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  p  { color: var(--text); font-size: 13px; line-height: 1.6; }
+  ul { list-style: none; }
+  ul li { color: var(--text); font-size: 13px; line-height: 1.5; padding: 3px 0 3px 18px; position: relative; }
+  ul li::before { content: "▸"; color: var(--red); position: absolute; left: 0; font-size: 11px; top: 5px; }
+
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+  /* ── GRID LAYOUTS ───────────────────────────────────────── */
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .cols-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── CARDS ──────────────────────────────────────────────── */
+  .card {
+    background: var(--light);
+    border-radius: 6px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--navy);
+  }
+  .card.red  { border-left-color: var(--red); }
+  .card.green{ border-left-color: var(--green); }
+  .card.orange{border-left-color: var(--orange); }
+
+  /* ── STAT BOXES ─────────────────────────────────────────── */
+  .stat-box {
+    background: var(--navy);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+    color: var(--white);
+  }
+  .stat-box .num { font-size: 28px; font-weight: 800; color: var(--white); line-height: 1; }
+  .stat-box .num span { color: #7FA8D4; font-size: 16px; }
+  .stat-box .lbl { font-size: 11px; color: #A8C0D8; margin-top: 4px; letter-spacing: .5px; }
+
+  .stat-box.accent { background: var(--red); }
+  .stat-box.accent .num { color: var(--white); }
+  .stat-box.accent .lbl { color: rgba(255,255,255,.75); }
+
+  /* ── METRIC TABLE ───────────────────────────────────────── */
+  .metric-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  .metric-table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 7px 12px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .metric-table td { padding: 7px 12px; border-bottom: 1px solid var(--mid); color: var(--text); }
+  .metric-table tr:last-child td { border-bottom: none; }
+  .metric-table tr:nth-child(even) td { background: var(--light); }
+  .metric-table .winner td { background: #EBF5EB !important; font-weight: 600; }
+  .metric-table .best { color: var(--green); font-weight: 700; }
+  .metric-table .badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    letter-spacing: .5px;
+    font-weight: 700;
+  }
+
+  /* ── CODE BLOCKS ────────────────────────────────────────── */
+  .code-block {
+    background: #1E2A3A;
+    border-radius: 5px;
+    padding: 12px 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    color: #CDD6E0;
+    line-height: 1.6;
+    overflow: hidden;
+  }
+  .code-block .kw  { color: #7FB6E0; }
+  .code-block .str { color: #98D98C; }
+  .code-block .cmt { color: #6A7F92; font-style: italic; }
+  .code-block .num { color: #E5A86A; }
+
+  /* ── PIPELINE STEPS ─────────────────────────────────────── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 8px 0;
+  }
+  .pipe-step {
+    background: var(--navy);
+    color: var(--white);
+    padding: 8px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    border-radius: 4px;
+    text-align: center;
+    flex: 1;
+    line-height: 1.3;
+  }
+  .pipe-step.red { background: var(--red); }
+  .pipe-step.light { background: var(--mid); color: var(--navy); }
+  .pipe-arrow {
+    color: var(--muted);
+    font-size: 18px;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── HIGHLIGHT BOX ──────────────────────────────────────── */
+  .highlight {
+    background: linear-gradient(135deg, #EBF0FA 0%, #F4F6F9 100%);
+    border: 1px solid #C5D0E0;
+    border-left: 4px solid var(--red);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ── QUOTE ──────────────────────────────────────────────── */
+  .quote {
+    background: var(--light);
+    border-radius: 6px;
+    padding: 10px 14px 10px 18px;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    border-left: 3px solid #A8B8CC;
+    line-height: 1.5;
+  }
+
+  /* ── PROGRESS BAR ───────────────────────────────────────── */
+  .bar-wrap { margin: 4px 0; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 11.5px; margin-bottom: 3px; }
+  .bar-label .name { color: var(--navy); font-weight: 600; }
+  .bar-label .val  { color: var(--muted); }
+  .bar-track { background: var(--mid); border-radius: 3px; height: 8px; overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 3px; background: var(--navy); transition: width .3s; }
+  .bar-fill.red { background: var(--red); }
+  .bar-fill.green { background: var(--green); }
+
+  /* ── FOOTER ─────────────────────────────────────────────── */
+  .slide-footer {
+    background: var(--light);
+    border-top: 1px solid var(--mid);
+    padding: 7px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .slide-footer .left  { color: var(--muted); font-size: 10.5px; font-weight: 600; letter-spacing: .5px; }
+  .slide-footer .right { color: var(--muted); font-size: 10.5px; }
+  .slide-num {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .slide-num .current { color: var(--navy); font-size: 14px; font-weight: 800; }
+
+  /* ── COVER SLIDE ────────────────────────────────────────── */
+  .slide-cover {
+    background: var(--navy);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .slide-cover .cover-inner { max-width: 680px; }
+  .slide-cover .cover-pretitle {
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .slide-cover h1 {
+    color: var(--white);
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .slide-cover h1 span { color: #7FB6E0; }
+  .slide-cover .cover-sub {
+    color: #A8C0D8;
+    font-size: 14px;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .cover-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  .cover-stat {
+    text-align: center;
+  }
+  .cover-stat .n { color: var(--white); font-size: 26px; font-weight: 800; }
+  .cover-stat .l { color: #7FA8D4; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+  .cover-divider {
+    width: 1px;
+    background: rgba(255,255,255,.2);
+    margin: 0 8px;
+  }
+  .cover-authors {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+  }
+  .cover-author { color: #A8C0D8; font-size: 12px; }
+  .cover-author strong { color: var(--white); display: block; font-size: 13px; }
+  .cover-school {
+    margin-top: 20px;
+    color: rgba(255,255,255,.35);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION DIVIDER SLIDE ──────────────────────────────── */
+  .slide-divider {
+    background: var(--navy);
+    justify-content: center;
+    align-items: center;
+  }
+  .divider-inner { text-align: center; }
+  .divider-num {
+    font-size: 72px;
+    font-weight: 900;
+    color: rgba(255,255,255,.08);
+    line-height: 1;
+    margin-bottom: -20px;
+  }
+  .divider-title {
+    color: var(--white);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .divider-title span { color: var(--red); }
+  .divider-sub { color: #7FA8D4; font-size: 14px; }
+  .divider-bar {
+    width: 60px;
+    height: 3px;
+    background: var(--red);
+    margin: 16px auto;
+  }
+
+  /* ── ICON GRID ──────────────────────────────────────────── */
+  .icon-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .icon-card {
+    background: var(--light);
+    border-radius: 8px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .icon-card .icon { font-size: 26px; margin-bottom: 6px; }
+  .icon-card .title { color: var(--navy); font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .icon-card .desc  { color: var(--muted); font-size: 10.5px; line-height: 1.4; }
+
+  /* ── CONCLUSION SLIDE ───────────────────────────────────── */
+  .conclusion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .concl-card {
+    background: var(--light);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-top: 3px solid var(--navy);
+  }
+  .concl-card.red { border-top-color: var(--red); }
+  .concl-card h3 { color: var(--navy); font-size: 12px; font-weight: 700; margin-bottom: 8px; letter-spacing: .3px; text-transform: uppercase; }
+  .concl-card ul li { font-size: 11.5px; }
+
+  /* ── RAG FLOW ───────────────────────────────────────────── */
+  .rag-flow { display: flex; flex-direction: column; gap: 6px; }
+  .rag-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .rag-num {
+    background: var(--navy);
+    color: var(--white);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .rag-num.red { background: var(--red); }
+  .rag-content { flex: 1; }
+  .rag-content strong { color: var(--navy); font-size: 12.5px; display: block; }
+  .rag-content span   { color: var(--muted); font-size: 11.5px; }
+
+  /* ── WORD2VEC VIZ ───────────────────────────────────────── */
+  .w2v-pair {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 5px 0;
+  }
+  .w2v-word {
+    background: var(--navy);
+    color: var(--white);
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+  }
+  .w2v-arrow { color: var(--muted); font-size: 16px; }
+  .w2v-dist {
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 50px;
+  }
+  .w2v-dist.close  { color: var(--green); }
+  .w2v-dist.far    { color: var(--red); }
+  .w2v-bar { flex: 1; }
+
+  /* ── DEMO SCREEN ────────────────────────────────────────── */
+  .demo-screen {
+    background: var(--navy);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .demo-screen .bar {
+    background: rgba(255,255,255,.1);
+    padding: 6px 12px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .demo-screen .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .demo-screen .dot.r { background: #FF5F57; }
+  .demo-screen .dot.y { background: #FFBD2E; }
+  .demo-screen .dot.g { background: #28C840; }
+  .demo-screen .url { color: rgba(255,255,255,.5); font-size: 10px; margin-left: 8px; font-family: monospace; }
+  .demo-screen .content { padding: 12px 14px; }
+
+  /* ── NAVIGATION ─────────────────────────────────────────── */
+  #nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid rgba(255,255,255,.15);
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,.8);
+    font-size: 18px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,.2); }
+  .nav-dots { display: flex; gap: 5px; }
+  .nav-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.35);
+    cursor: pointer;
+    transition: background .15s, transform .15s;
+  }
+  .nav-dot.active { background: var(--white); transform: scale(1.35); }
+  .nav-info { color: rgba(255,255,255,.7); font-size: 11px; font-weight: 600; min-width: 44px; text-align: center; }
+
+  /* ── PROGRESS TOP ───────────────────────────────────────── */
+  #progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--red);
+    transition: width .25s;
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 1 — COVER
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide slide-cover active" id="s1">
+    <div class="cover-inner">
+      <div class="cover-pretitle">ESILV — NLP Project 2025</div>
+      <h1>Insurance Reviews<br><span>Analysis & RAG Assistant</span></h1>
+      <div class="cover-sub">
+        End-to-end NLP pipeline · Classical ML vs Transformers · Streamlit Production App
+      </div>
+      <div class="cover-stats">
+        <div class="cover-stat">
+          <div class="n">34K</div>
+          <div class="l">Reviews</div>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-stat">
+          <div class="n">56</div>
+          <div class="l">Insurers</div>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-stat">
+          <div class="n">3</div>
+          <div class="l">ML Models</div>
+        </div>
+        <div class="cover-divider"></div>
+        <div class="cover-stat">
+          <div class="n">75%</div>
+          <div class="l">Best Accuracy</div>
+        </div>
+      </div>
+      <div class="cover-authors">
+        <div class="cover-author">
+          <strong>Gabriel Matar</strong>
+        </div>
+        <div class="cover-author">
+          <strong>Octave Pedergnana</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 2 — PROJECT OVERVIEW
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s2">
+    <div class="slide-header">
+      <h1>Project Overview</h1>
+      <div class="tag">Introduction</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <p class="subtitle">Analyzing 34,435 French insurance reviews to build a production-grade NLP application</p>
+      <div class="cols-2" style="flex:1;align-items:start;">
+        <div>
+          <h2>Objectives</h2>
+          <ul style="margin-bottom:14px;">
+            <li>Build a complete data engineering & cleaning pipeline for raw French reviews</li>
+            <li>Apply unsupervised learning: Word2Vec embeddings + NMF topic modeling</li>
+            <li>Compare 3 NLP architectures for 3-class Sentiment Analysis</li>
+            <li>Deploy a production Streamlit app with real-time predictions and a QA assistant</li>
+          </ul>
+          <div class="highlight">
+            Problem framed as <strong>Sentiment Analysis</strong> (Positive / Neutral / Negative)
+            to handle the high subjectivity of raw 1–5 star ratings.
+          </div>
+        </div>
+        <div>
+          <h2>Dataset</h2>
+          <div class="cols-2" style="gap:10px;margin-bottom:12px;">
+            <div class="stat-box"><div class="num">34<span>K</span></div><div class="lbl">Total Reviews</div></div>
+            <div class="stat-box"><div class="num">56</div><div class="lbl">Insurers</div></div>
+            <div class="stat-box"><div class="num">13</div><div class="lbl">Product Types</div></div>
+            <div class="stat-box accent"><div class="num">26<span>MB</span></div><div class="lbl">Processed CSV</div></div>
+          </div>
+          <div class="card">
+            <h3>Main product: Auto insurance</h3>
+            <div style="margin-top:6px;">
+              <div class="bar-wrap">
+                <div class="bar-label"><span class="name">Auto</span><span class="val">58.5%</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:58.5%"></div></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar-label"><span class="name">Santé</span><span class="val">14.5%</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:14.5%"></div></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar-label"><span class="name">Moto</span><span class="val">8.8%</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:8.8%"></div></div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar-label"><span class="name">Habitation</span><span class="val">8.2%</span></div>
+                <div class="bar-track"><div class="bar-fill" style="width:8.2%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">2</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 3 — DATA PREPARATION
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s3">
+    <div class="slide-header">
+      <h1>Data Preparation & ETL Pipeline</h1>
+      <div class="tag">Data Engineering</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="cols-2" style="flex:1;gap:24px;">
+        <div>
+          <h2>Preprocessing Pipeline</h2>
+          <div class="pipeline" style="flex-direction:column;align-items:stretch;gap:5px;margin-bottom:12px;">
+            <div class="pipe-step">1 — Lowercase conversion</div>
+            <div class="pipe-step">2 — Punctuation &amp; digit removal<br><span style="font-weight:400;font-size:10px;">re.sub(r'[^\w\s]', ' ', text)</span></div>
+            <div class="pipe-step">3 — Domain stopwords removal<br><span style="font-weight:400;font-size:10px;">"très", "plus", "fait", "avoir" + NLTK French</span></div>
+            <div class="pipe-step">4 — Token length filter (len &gt; 2)</div>
+            <div class="pipe-step red">5 — Unigrams + Bigrams (n-gram extraction)</div>
+          </div>
+          <h2 style="margin-top:4px;">Sentiment Mapping</h2>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <div class="card red" style="flex:1;padding:8px 10px;">
+              <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.5px;">NÉGATIF</div>
+              <div style="font-size:18px;font-weight:800;color:var(--navy);">note ≤ 2</div>
+              <div style="font-size:11px;color:var(--muted);">45.6% of data</div>
+            </div>
+            <div class="card" style="flex:1;padding:8px 10px;">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;">NEUTRE</div>
+              <div style="font-size:18px;font-weight:800;color:var(--navy);">note = 3</div>
+              <div style="font-size:11px;color:var(--muted);">14.0% of data</div>
+            </div>
+            <div class="card green" style="flex:1;padding:8px 10px;">
+              <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:.5px;">POSITIF</div>
+              <div style="font-size:18px;font-weight:800;color:var(--navy);">note ≥ 4</div>
+              <div style="font-size:11px;color:var(--muted);">40.4% of data</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Key Decisions &amp; Challenges</h2>
+          <div class="card red" style="margin-bottom:10px;">
+            <h3 style="color:var(--red);">⚠ Spell-Checking (pyspellchecker)</h3>
+            <p>Functional but altered crucial proper nouns — insurer names corrupted. <strong>Conscious choice: not applied to full dataset</strong> to preserve semantic signal integrity.</p>
+          </div>
+          <div class="card green" style="margin-bottom:10px;">
+            <h3 style="color:var(--green);">✓ English Translation Export</h3>
+            <p>Full dataset translated to English (<code>avis_en</code> column, 99.99% coverage). Validates ETL pipeline and opens future testing with English-language models.</p>
+          </div>
+          <div class="card">
+            <h3>Train / Test Split</h3>
+            <div style="display:flex;gap:12px;margin-top:6px;">
+              <div style="text-align:center;flex:1;">
+                <div style="font-size:20px;font-weight:800;color:var(--navy);">24,104</div>
+                <div style="font-size:10px;color:var(--muted);">Training reviews</div>
+              </div>
+              <div style="text-align:center;flex:1;">
+                <div style="font-size:20px;font-weight:800;color:var(--navy);">10,331</div>
+                <div style="font-size:10px;color:var(--muted);">Test reviews</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">3</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 4 — WORD2VEC
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s4">
+    <div class="slide-header">
+      <h1>Unsupervised Analysis — Word2Vec Embeddings</h1>
+      <div class="tag">Semantic Modeling</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="cols-2" style="flex:1;gap:24px;">
+        <div>
+          <h2>Model Configuration</h2>
+          <div class="code-block" style="margin-bottom:14px;">
+<span class="kw">Word2Vec</span>(
+  sentences = corpus_tokenise,
+  vector_size = <span class="num">100</span>,   <span class="cmt"># embedding dims</span>
+  window      = <span class="num">5</span>,     <span class="cmt"># context window</span>
+  min_count   = <span class="num">5</span>,     <span class="cmt"># min occurrences</span>
+  workers     = <span class="num">4</span>
+)
+          </div>
+          <h2>Semantic Distances</h2>
+          <div style="margin-top:8px;">
+            <div class="w2v-pair">
+              <div class="w2v-word">prix</div>
+              <div class="w2v-arrow">↔</div>
+              <div class="w2v-word">tarif</div>
+              <div class="w2v-dist close">0.078</div>
+              <div class="w2v-bar">
+                <div class="bar-track"><div class="bar-fill green" style="width:92%;height:8px;border-radius:3px;"></div></div>
+                <div style="font-size:9px;color:var(--green);margin-top:2px;">Very similar — synonyms ✓</div>
+              </div>
+            </div>
+            <div class="w2v-pair" style="margin-top:8px;">
+              <div class="w2v-word">sinistre</div>
+              <div class="w2v-arrow">↔</div>
+              <div class="w2v-word">accident</div>
+              <div class="w2v-dist close">0.173</div>
+              <div class="w2v-bar">
+                <div class="bar-track"><div class="bar-fill green" style="width:83%;height:8px;border-radius:3px;"></div></div>
+                <div style="font-size:9px;color:var(--green);margin-top:2px;">Similar — related concepts ✓</div>
+              </div>
+            </div>
+            <div class="w2v-pair" style="margin-top:8px;">
+              <div class="w2v-word">prix</div>
+              <div class="w2v-arrow">↔</div>
+              <div class="w2v-word">remboursement</div>
+              <div class="w2v-dist far">0.892</div>
+              <div class="w2v-bar">
+                <div class="bar-track"><div class="bar-fill red" style="width:11%;height:8px;border-radius:3px;"></div></div>
+                <div style="font-size:9px;color:var(--red);margin-top:2px;">Very different — unrelated ✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Top Similar Words by Topic</h2>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+            <div class="card">
+              <h3>💰 "prix" (price)</h3>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">tarif 0.92</span>
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">tarifs 0.88</span>
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">franchises 0.72</span>
+              </div>
+            </div>
+            <div class="card">
+              <h3>🚗 "sinistre" (claim)</h3>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">accident 0.83</span>
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">sinistres 0.79</span>
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">incident 0.77</span>
+              </div>
+            </div>
+            <div class="card">
+              <h3>💳 "remboursement" (reimbursement)</h3>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">soins 0.73</span>
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">paiement 0.72</span>
+                <span style="background:var(--navy);color:white;font-size:10px;padding:2px 8px;border-radius:10px;">dentaires 0.72</span>
+              </div>
+            </div>
+            <div class="highlight" style="margin-top:4px;">
+              Word2Vec successfully captured <strong>business semantic links</strong> — insurance vocabulary structured into coherent semantic clusters from raw review text.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">4</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 5 — MODEL COMPARISON
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s5">
+    <div class="slide-header">
+      <h1>Supervised ML — 3 Architecture Comparison</h1>
+      <div class="tag">Sentiment Analysis</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <p class="subtitle">3-class classification: Négatif (≤2★) · Neutre (3★) · Positif (≥4★)</p>
+      <table class="metric-table" style="margin-bottom:14px;">
+        <thead>
+          <tr>
+            <th>Architecture</th>
+            <th>Accuracy</th>
+            <th>Macro F1</th>
+            <th>F1 Négatif</th>
+            <th>F1 Neutre</th>
+            <th>F1 Positif</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="winner">
+            <td>TF-IDF + Logistic Regression <span class="badge">PROD</span></td>
+            <td class="best">0.754</td>
+            <td class="best">0.666</td>
+            <td>0.83</td>
+            <td>0.30</td>
+            <td>0.80</td>
+          </tr>
+          <tr>
+            <td>CamemBERT (sentence-transformers)</td>
+            <td>0.725</td>
+            <td>0.643</td>
+            <td>0.83</td>
+            <td>0.30</td>
+            <td>0.80</td>
+          </tr>
+          <tr>
+            <td>Keras (custom Embedding layer)</td>
+            <td>0.662</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="cols-3">
+        <div class="card">
+          <h3>TF-IDF + LR</h3>
+          <p>max_features=10K, ngram (1,2), sublinear_tf. Captures polarized vocabulary extremely well. Class weights balanced.</p>
+          <div style="margin-top:8px;font-size:11px;color:var(--green);font-weight:700;">→ Selected for production</div>
+        </div>
+        <div class="card">
+          <h3>CamemBERT</h3>
+          <p><code>dangvantuan/sentence-camembert-base</code> — 384-dim embeddings via mean pooling. <strong>No fine-tuning</strong> on domain data.</p>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted);">→ Loses contextual edge without FT</div>
+        </div>
+        <div class="card">
+          <h3>Keras Deep Learning</h3>
+          <p>50-dim Embedding → GlobalAvgPool1D → Dense(32) → Dropout(0.5) → Dense(3, softmax). 10 epochs, batch 64.</p>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted);">→ Insufficient training volume</div>
+        </div>
+      </div>
+      <div class="highlight" style="margin-top:12px;">
+        <strong>Why TF-IDF wins:</strong> Insurance reviews are highly polarized with explicit signal words ("arnaque", "parfait", "nul"). TF-IDF captures this vocabulary directly. A Transformer without fine-tuning cannot leverage its contextual advantage on this domain.
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">5</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 6 — RAG ARCHITECTURE
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s6">
+    <div class="slide-header">
+      <h1>RAG System — Hybrid Extractive Architecture</h1>
+      <div class="tag">RAG / QA</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="cols-2" style="flex:1;gap:24px;">
+        <div>
+          <h2>Design Choice: Local vs. API</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div class="card red">
+              <h3 style="color:var(--red);">✗ Remote LLM API</h3>
+              <ul style="font-size:11px;">
+                <li>Latency instability</li>
+                <li>Hallucination risk</li>
+                <li>API cost &amp; dependency</li>
+                <li>Data privacy concern</li>
+              </ul>
+            </div>
+            <div class="card green">
+              <h3 style="color:var(--green);">✓ Local Extractive RAG</h3>
+              <ul style="font-size:11px;">
+                <li>100% factual reliability</li>
+                <li>Zero hallucinations</li>
+                <li>Immediate execution</li>
+                <li>Full data control</li>
+              </ul>
+            </div>
+          </div>
+          <h2>Processing Pipeline</h2>
+          <div class="rag-flow" style="margin-top:8px;">
+            <div class="rag-step">
+              <div class="rag-num">1</div>
+              <div class="rag-content"><strong>Entity Detection</strong><span>Scans 56 known insurer names in the question</span></div>
+            </div>
+            <div class="rag-step">
+              <div class="rag-num">2</div>
+              <div class="rag-content"><strong>Intent Detection</strong><span>Keyword matching → prix / service client / sinistres / général</span></div>
+            </div>
+            <div class="rag-step">
+              <div class="rag-num red">3</div>
+              <div class="rag-content"><strong>Retrieval</strong><span>Filters 34K DB by insurer + theme keywords (pandas str.contains)</span></div>
+            </div>
+            <div class="rag-step">
+              <div class="rag-num red">4</div>
+              <div class="rag-content"><strong>Mathematical Conclusion</strong><span>Avg note → sentiment label + top 3 verbatim extracts</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Intent Keywords</h2>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+            <div class="card">
+              <h3>💰 Prix / Tarifs</h3>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">prix</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">tarif</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">cher</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">cotisation</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">augmentation</span>
+              </div>
+            </div>
+            <div class="card">
+              <h3>📞 Service Client</h3>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">service</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">téléphone</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">joignable</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">conseiller</span>
+              </div>
+            </div>
+            <div class="card">
+              <h3>🚨 Gestion Sinistres</h3>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">sinistre</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">accident</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">remboursement</span>
+                <span style="background:var(--mid);color:var(--navy);font-size:10px;padding:2px 7px;border-radius:3px;font-family:monospace;">expert</span>
+              </div>
+            </div>
+          </div>
+          <div class="highlight">
+            <strong>Guarantee:</strong> All answers derive directly from real customer reviews. No LLM generation = no fabricated data. Response = metric + exact verbatims.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">6</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 7 — APP OVERVIEW (BINÔME)
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s7">
+    <div class="slide-header">
+      <h1>Streamlit Application — Overview</h1>
+      <div class="tag">Live Demo</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <p class="subtitle" style="margin-bottom:16px;">4-page production application · <code>streamlit run app.py</code> · 218 lines · fully local, zero external dependencies</p>
+      <div class="icon-grid">
+        <div class="icon-card">
+          <div class="icon">🔍</div>
+          <div class="title">Information Retrieval</div>
+          <div class="desc">Keyword + insurer search across 34K reviews. Returns matching excerpts in real time.</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon">🔮</div>
+          <div class="title">Prediction & Explainability</div>
+          <div class="desc">Live sentiment prediction with TF-IDF keyword highlighting — explains model decisions.</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon">📊</div>
+          <div class="title">Insurer Analysis</div>
+          <div class="desc">Dynamic per-insurer dashboard: avg rating, distribution chart, top vocabulary.</div>
+        </div>
+        <div class="icon-card">
+          <div class="icon">🤖</div>
+          <div class="title">Virtual Assistant (RAG)</div>
+          <div class="desc">Natural language QA with entity/intent detection + verbatim answers from the database.</div>
+        </div>
+      </div>
+      <div class="cols-2" style="margin-top:14px;gap:16px;">
+        <div class="card">
+          <h3>Performance Optimizations</h3>
+          <ul>
+            <li><code>@st.cache_data</code> — loads CSV once (26 MB, 34K rows)</li>
+            <li><code>@st.cache_resource</code> — loads TF-IDF + model once</li>
+            <li>Near-zero inference time for sentiment prediction</li>
+          </ul>
+        </div>
+        <div class="card green">
+          <h3>Saved Model Files</h3>
+          <ul>
+            <li><code>models/tfidf_vectorizer.pkl</code> — 401 KB</li>
+            <li><code>models/sentiment_model.pkl</code> — 236 KB</li>
+            <li>Total serialized pipeline: <strong>637 KB</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">7</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 8 — DEMO: PREDICTION & IR
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s8">
+    <div class="slide-header">
+      <h1>Demo — Prediction &amp; Information Retrieval</h1>
+      <div class="tag">Live Demo</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="cols-2" style="flex:1;gap:20px;">
+        <div>
+          <h2>Page: Prédiction &amp; Explication</h2>
+          <div class="demo-screen" style="margin-top:8px;">
+            <div class="bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="url">localhost:8501 — Prédiction &amp; Explication</div></div>
+            <div class="content">
+              <div style="background:rgba(255,255,255,.07);border-radius:4px;padding:8px 10px;color:#CDD6E0;font-size:11px;font-family:monospace;margin-bottom:8px;">
+                Entrez votre avis client ici...
+              </div>
+              <div style="background:#1A3A1A;border-radius:4px;padding:8px 10px;margin-bottom:6px;">
+                <div style="color:#5BC863;font-size:12px;font-weight:700;">✓ POSITIF</div>
+                <div style="color:rgba(255,255,255,.6);font-size:10px;margin-top:3px;">Mots clés détectés : excellent · rapide · professionnel</div>
+              </div>
+              <div style="background:#3A1A1A;border-radius:4px;padding:8px 10px;">
+                <div style="color:#E06060;font-size:12px;font-weight:700;">✗ NÉGATIF</div>
+                <div style="color:rgba(255,255,255,.6);font-size:10px;margin-top:3px;">Mots clés détectés : arnaque · incompétent · remboursement</div>
+              </div>
+            </div>
+          </div>
+          <div class="highlight" style="margin-top:10px;font-size:11.5px;">
+            Keywords extracted from TF-IDF vocabulary make every prediction <strong>fully explainable</strong> — no black box.
+          </div>
+        </div>
+        <div>
+          <h2>Page: Recherche d'Avis (IR)</h2>
+          <div class="demo-screen" style="margin-top:8px;">
+            <div class="bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="url">localhost:8501 — Recherche d'Avis</div></div>
+            <div class="content">
+              <div style="display:flex;gap:6px;margin-bottom:8px;">
+                <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:5px 8px;color:#CDD6E0;font-size:10px;font-family:monospace;flex:1;">🔍 sinistre</div>
+                <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:5px 8px;color:#CDD6E0;font-size:10px;font-family:monospace;flex:1;">Assureur : AXA ▼</div>
+              </div>
+              <div style="background:rgba(255,255,255,.06);border-radius:3px;padding:6px 8px;">
+                <div style="color:#7FA8D4;font-size:10px;margin-bottom:4px;">243 avis trouvés · Top 50 affichés</div>
+                <div style="border-bottom:1px solid rgba(255,255,255,.08);padding:3px 0;color:#CDD6E0;font-size:10px;">AXA · ★2 · "Mon sinistre n'a pas été..."</div>
+                <div style="border-bottom:1px solid rgba(255,255,255,.08);padding:3px 0;color:#CDD6E0;font-size:10px;">AXA · ★1 · "Impossible de joindre l'expert..."</div>
+                <div style="padding:3px 0;color:#CDD6E0;font-size:10px;">AXA · ★4 · "Sinistre géré en 48h, parfait..."</div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:10px;">
+            <h3>Filter Capabilities</h3>
+            <ul style="font-size:11.5px;">
+              <li>Keyword search (case-insensitive regex)</li>
+              <li>Filter by any of the 56 insurers</li>
+              <li>Displays: assureur, note, avis columns</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">8</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 9 — DEMO: INSURER ANALYSIS & RAG
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s9">
+    <div class="slide-header">
+      <h1>Demo — Insurer Analysis &amp; Virtual Assistant</h1>
+      <div class="tag">Live Demo</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="cols-2" style="flex:1;gap:20px;">
+        <div>
+          <h2>Page: Analyse par Assureur</h2>
+          <div class="demo-screen" style="margin-top:8px;">
+            <div class="bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="url">localhost:8501 — Analyse Assureur</div></div>
+            <div class="content">
+              <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:5px 8px;color:#CDD6E0;font-size:10px;font-family:monospace;margin-bottom:8px;">Assureur : MAIF ▼</div>
+              <div style="display:flex;gap:6px;margin-bottom:8px;">
+                <div style="background:rgba(255,255,255,.07);border-radius:4px;padding:6px 8px;flex:1;text-align:center;">
+                  <div style="color:#7FB6E0;font-size:16px;font-weight:800;">3.8</div>
+                  <div style="color:rgba(255,255,255,.5);font-size:9px;">Note moy.</div>
+                </div>
+                <div style="background:rgba(255,255,255,.07);border-radius:4px;padding:6px 8px;flex:1;text-align:center;">
+                  <div style="color:#7FB6E0;font-size:16px;font-weight:800;">412</div>
+                  <div style="color:rgba(255,255,255,.5);font-size:9px;">Avis</div>
+                </div>
+                <div style="background:rgba(255,255,255,.07);border-radius:4px;padding:6px 8px;flex:1;text-align:center;">
+                  <div style="color:#5BC863;font-size:16px;font-weight:800;">58%</div>
+                  <div style="color:rgba(255,255,255,.5);font-size:9px;">Positifs</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:2px;align-items:flex-end;height:36px;">
+                <div style="flex:1;background:#E06060;height:80%;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;background:#E08030;height:55%;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;background:#E0D030;height:40%;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;background:#30B050;height:65%;border-radius:2px 2px 0 0;"></div>
+                <div style="flex:1;background:#2080C0;height:70%;border-radius:2px 2px 0 0;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.4);font-size:9px;margin-top:2px;"><span>★1</span><span>★2</span><span>★3</span><span>★4</span><span>★5</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>Page: Assistant Virtuel (RAG)</h2>
+          <div class="demo-screen" style="margin-top:8px;">
+            <div class="bar"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="url">localhost:8501 — Assistant Virtuel</div></div>
+            <div class="content">
+              <div style="background:rgba(255,255,255,.08);border-radius:3px;padding:5px 8px;color:#CDD6E0;font-size:10px;margin-bottom:6px;font-family:monospace;">
+                "Que pensent les clients du prix chez AXA ?"
+              </div>
+              <div style="background:rgba(27,42,74,.6);border-radius:4px;padding:8px 10px;border-left:2px solid #7FB6E0;">
+                <div style="color:#7FB6E0;font-size:10px;font-weight:700;margin-bottom:4px;">D'après 1,243 avis pertinents :</div>
+                <div style="color:rgba(255,255,255,.8);font-size:10px;">Sentiment <strong>prix</strong> chez <strong>AXA</strong> : <span style="color:#E06060;">plutôt négatif</span> (Note moy : 2.4/5)</div>
+              </div>
+              <div style="margin-top:5px;background:rgba(255,255,255,.04);border-radius:3px;padding:5px 8px;color:rgba(255,255,255,.55);font-size:9.5px;font-style:italic;">"Les tarifs augmentent chaque année..."</div>
+              <div style="margin-top:3px;background:rgba(255,255,255,.04);border-radius:3px;padding:5px 8px;color:rgba(255,255,255,.55);font-size:9.5px;font-style:italic;">"Prix excessif par rapport aux services..."</div>
+            </div>
+          </div>
+          <div class="highlight" style="margin-top:10px;font-size:11px;">
+            Every response cites <strong>real verbatims</strong> from the database — mathematically grounded, fully traceable, zero hallucinations.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">9</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 10 — TECH STACK
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s10">
+    <div class="slide-header">
+      <h1>Technical Stack &amp; Project Structure</h1>
+      <div class="tag">Architecture</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="cols-2" style="flex:1;gap:24px;">
+        <div>
+          <h2>Dependencies</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+            <div class="card"><h3>Data Layer</h3><ul style="font-size:11px;"><li>pandas, numpy</li><li>26 MB processed CSV</li><li>35 raw Excel files</li></ul></div>
+            <div class="card"><h3>NLP / ML</h3><ul style="font-size:11px;"><li>scikit-learn (TF-IDF, LR)</li><li>NLTK (tokenization)</li><li>Gensim (Word2Vec)</li></ul></div>
+            <div class="card"><h3>Deep Learning</h3><ul style="font-size:11px;"><li>TensorFlow / Keras</li><li>sentence-transformers</li><li>CamemBERT (HuggingFace)</li></ul></div>
+            <div class="card"><h3>Application</h3><ul style="font-size:11px;"><li>Streamlit</li><li>joblib (model pkl)</li><li>matplotlib / plotly</li></ul></div>
+          </div>
+        </div>
+        <div>
+          <h2>Repository Structure</h2>
+          <div class="code-block" style="font-size:11px;line-height:1.7;">
+<span style="color:#7FB6E0;">NLP_Assurance_Prediction/</span>
+├── <span class="str">app.py</span>              <span class="cmt"># Streamlit app (218 lines)</span>
+├── <span class="str">notebook/</span>
+│   └── <span class="str">notebook_nlp.ipynb</span>  <span class="cmt"># Full pipeline</span>
+├── <span class="str">data/</span>
+│   ├── raw/            <span class="cmt"># 35 Excel source files</span>
+│   └── processed/
+│       └── <span class="str">dataset_propre_et_traduit.csv</span> <span class="cmt">(26MB)</span>
+├── <span class="str">models/</span>
+│   ├── <span class="str">tfidf_vectorizer.pkl</span>    <span class="cmt">(401 KB)</span>
+│   └── <span class="str">sentiment_model.pkl</span>     <span class="cmt">(236 KB)</span>
+└── <span class="str">requirements.txt</span>
+          </div>
+          <div class="card" style="margin-top:10px;">
+            <h3>Key Design Principles</h3>
+            <ul style="font-size:11.5px;">
+              <li>Fully local — no external API calls at inference</li>
+              <li>Cached data loading for sub-second app startup</li>
+              <li>Explainable predictions via TF-IDF vocabulary</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">10</span> / 11</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SLIDE 11 — CONCLUSION
+  ════════════════════════════════════════════════════════════ -->
+  <div class="slide" id="s11">
+    <div class="slide-header">
+      <h1>Conclusion &amp; Key Takeaways</h1>
+      <div class="tag">Summary</div>
+    </div>
+    <div class="accent-line"></div>
+    <div class="slide-body">
+      <div class="conclusion-grid" style="flex:1;">
+        <div class="concl-card">
+          <h3>Data Engineering</h3>
+          <ul>
+            <li>34,435 French insurance reviews cleaned end-to-end</li>
+            <li>Domain-aware stopwords preserved semantic integrity</li>
+            <li>Spell-checker consciously excluded to protect proper nouns</li>
+            <li>English translation export for future model compatibility</li>
+          </ul>
+        </div>
+        <div class="concl-card">
+          <h3>Unsupervised Learning</h3>
+          <ul>
+            <li>Word2Vec captured business semantics: prix↔tarif (0.078)</li>
+            <li>Cosine distance validated insurance domain vocabulary clusters</li>
+            <li>NMF topic modeling structured review themes automatically</li>
+          </ul>
+        </div>
+        <div class="concl-card red">
+          <h3>Model Comparison — Key Insight</h3>
+          <ul>
+            <li>TF-IDF + LR: <strong>75.4% accuracy</strong>, F1 0.667 → PRODUCTION</li>
+            <li>CamemBERT (no FT): 72.5% — contextual power lost without fine-tuning</li>
+            <li>Keras custom embeddings: 66.2% — insufficient data volume</li>
+            <li>Polarized vocabulary rewards statistical frequency methods</li>
+          </ul>
+        </div>
+        <div class="concl-card red">
+          <h3>Production RAG System</h3>
+          <ul>
+            <li>4-page Streamlit app — fully local, zero external dependencies</li>
+            <li>Extractive RAG: entity + intent detection → database retrieval</li>
+            <li>100% factual — answers grounded in real customer verbatims</li>
+            <li>Near-zero inference latency via cached models &amp; TF-IDF pipeline</li>
+          </ul>
+        </div>
+      </div>
+      <div style="background:var(--navy);border-radius:6px;padding:12px 20px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="color:var(--white);font-size:13px;font-weight:600;">
+          Classical ML still competitive — domain vocabulary matters more than model complexity
+        </div>
+        <div style="display:flex;gap:16px;flex-shrink:0;margin-left:20px;">
+          <div style="text-align:center;">
+            <div style="color:var(--white);font-size:20px;font-weight:800;">75%</div>
+            <div style="color:#7FA8D4;font-size:10px;">Best Accuracy</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:var(--white);font-size:20px;font-weight:800;">0%</div>
+            <div style="color:#7FA8D4;font-size:10px;">Hallucination Rate</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:var(--white);font-size:20px;font-weight:800;">34K</div>
+            <div style="color:#7FA8D4;font-size:10px;">Reviews Indexed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <div class="left">NLP Insurance Reviews · ESILV 2025</div>
+      <div class="slide-num"><span class="current">11</span> / 11</div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div id="nav">
+  <button class="nav-btn" id="prev" title="Previous (←)">&#8592;</button>
+  <div class="nav-dots" id="dots"></div>
+  <button class="nav-btn" id="next" title="Next (→)">&#8594;</button>
+  <div class="nav-info" id="info">1 / 11</div>
+</div>
+
+<script>
+  const TOTAL = 11;
+  let current = 1;
+
+  const slides  = document.querySelectorAll('.slide');
+  const dots    = document.getElementById('dots');
+  const info    = document.getElementById('info');
+  const bar     = document.getElementById('progress');
+
+  // Build dots
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 1 ? ' active' : '');
+    d.title = 'Slide ' + i;
+    d.addEventListener('click', () => goTo(i));
+    dots.appendChild(d);
+  }
+
+  function goTo(n) {
+    if (n < 1 || n > TOTAL) return;
+    slides[current - 1].classList.remove('active');
+    dots.children[current - 1].classList.remove('active');
+    current = n;
+    slides[current - 1].classList.add('active');
+    dots.children[current - 1].classList.add('active');
+    info.textContent = current + ' / ' + TOTAL;
+    bar.style.width = ((current / TOTAL) * 100) + '%';
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('next').addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); goTo(current - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault(); goTo(1);
+    } else if (e.key === 'End') {
+      e.preventDefault(); goTo(TOTAL);
+    }
+  });
+
+  // Init progress bar
+  bar.style.width = ((1 / TOTAL) * 100) + '%';
+</script>
+
+</body>
+</html>

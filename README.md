@@ -30,6 +30,13 @@ The application (`app.py`) is built to be fast, local, and fully interactive:
 - **Deep Learning:** TensorFlow / Keras, HuggingFace `sentence-transformers` (CamemBERT)
 - **Web App:** Streamlit
 
+## 🎬 Project Video
+
+> **[▶ Watch the project presentation video](#)**
+> *(Link to be updated)*
+
+---
+
 ## ⚙️ How to run the app locally
 1. Clone the repository.
 2. Install the required dependencies:
