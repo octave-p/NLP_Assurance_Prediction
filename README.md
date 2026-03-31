@@ -30,6 +30,10 @@ The application (`app.py`) is built to be fast, local, and fully interactive:
 - **Deep Learning:** TensorFlow / Keras, HuggingFace `sentence-transformers` (CamemBERT)
 - **Web App:** Streamlit
 
+## 📊 Project Presentation
+
+The project slideshow is available in [`presentation.html`](presentation.html) — download the file and open it in a browser to view it.
+
 ## 🎬 Project Video
 
 > **[▶ Watch the project presentation video](#)**
