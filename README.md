@@ -36,8 +36,7 @@ The project slideshow is available in [`presentation.html`](presentation.html) �
 
 ## 🎬 Project Video
 
-> **[▶ Watch the project presentation video](#)**
-> *(https://youtu.be/kb9RNWJ8a8U)*
+> **[▶ Watch the project presentation video](#)**(https://youtu.be/kb9RNWJ8a8U)
 
 ---
 
